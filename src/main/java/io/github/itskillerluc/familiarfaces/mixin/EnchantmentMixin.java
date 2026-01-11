@@ -19,10 +19,7 @@ public class EnchantmentMixin {
             if (pStack.getItem().equals(ItemRegistry.WOLF_ARMOR.get())) {
                 cir.setReturnValue(true);
                 cir.cancel();
-                return;
             }
-            cir.setReturnValue(false);
-            cir.cancel();
         }
     }
 }
