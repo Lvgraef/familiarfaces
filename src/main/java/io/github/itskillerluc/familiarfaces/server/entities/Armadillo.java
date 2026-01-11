@@ -1,6 +1,7 @@
 package io.github.itskillerluc.familiarfaces.server.entities;
 
 import com.mojang.serialization.Dynamic;
+import io.github.itskillerluc.familiarfaces.server.config.Config;
 import io.github.itskillerluc.familiarfaces.server.entities.ai.ArmadilloAi;
 import io.github.itskillerluc.familiarfaces.server.init.*;
 import io.github.itskillerluc.familiarfaces.server.util.Util;
@@ -56,6 +57,7 @@ public class Armadillo extends Animal {
     public final AnimationState peekAnimationState = new AnimationState();
     private long inStateTicks = 0L;
     private int scuteTime;
+    private int brushCooldown;
     private boolean peekReceivedClient = false;
 
     public Armadillo(EntityType<? extends Animal> entityType, Level level) {
@@ -144,6 +146,7 @@ public class Armadillo extends Animal {
         this.level().getProfiler().push("armadilloActivityUpdate");
         ArmadilloAi.updateActivity(this);
         this.level().getProfiler().pop();
+
         if (this.isAlive() && !this.isBaby() && --this.scuteTime <= 0) {
             this.playSound(SoundEventRegistry.ARMADILLO_SCUTE_DROP.get(), 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
             this.spawnAtLocation(ItemRegistry.ARMADILLO_SCUTE.get());
@@ -170,6 +173,10 @@ public class Armadillo extends Animal {
         }
 
         this.inStateTicks++;
+
+        if (this.brushCooldown > 0) {
+            this.brushCooldown--;
+        }
     }
 
     protected void clampHeadRotationToBody() {
@@ -229,9 +236,6 @@ public class Armadillo extends Animal {
         }
     }
 
-    /**
-     * Checks if the parameter is an item which this animal can be fed to breed it (wheat, carrots or seeds depending on the animal type)
-     */
     @Override
     public boolean isFood(ItemStack stack) {
         return stack.is(Tags.Items.ARMADILLO_FOOD);
@@ -256,17 +260,18 @@ public class Armadillo extends Animal {
         super.addAdditionalSaveData(compound);
         compound.putString("state", this.getState().getSerializedName());
         compound.putInt("scute_time", this.scuteTime);
+        compound.putInt("brush_cooldown", this.brushCooldown);
     }
 
-    /**
-     * (abstract) Protected helper method to read subclass entity data from NBT.
-     */
     @Override
     public void readAdditionalSaveData(CompoundTag compound) {
         super.readAdditionalSaveData(compound);
         this.switchToState(Armadillo.ArmadilloState.fromName(compound.getString("state")));
         if (compound.contains("scute_time")) {
             this.scuteTime = compound.getInt("scute_time");
+        }
+        if (compound.contains("brush_cooldown")) {
+            this.brushCooldown = compound.getInt("brush_cooldown");
         }
     }
 
@@ -293,9 +298,6 @@ public class Armadillo extends Animal {
         }
     }
 
-    /**
-     * Called when the entity is attacked.
-     */
     @Override
     public boolean hurt(DamageSource source, float amount) {
         if (this.isScared()) {
@@ -305,9 +307,6 @@ public class Armadillo extends Animal {
         return super.hurt(source, amount);
     }
 
-    /**
-     * Deals damage to the entity. This will take the armor of the entity into consideration before damaging the health bar.
-     */
     @Override
     protected void actuallyHurt(DamageSource damageSource, float damageAmount) {
         super.actuallyHurt(damageSource, damageAmount);
@@ -345,12 +344,13 @@ public class Armadillo extends Animal {
     }
 
     public boolean brushOffScute() {
-        if (this.isBaby()) {
+        if (this.isBaby() || this.brushCooldown > 0) {
             return false;
         } else {
             this.spawnAtLocation(new ItemStack(ItemRegistry.ARMADILLO_SCUTE.get()));
             this.gameEvent(GameEvent.ENTITY_INTERACT);
             this.playSound(SoundEventRegistry.ARMADILLO_BRUSH.get());
+            this.brushCooldown = Config.Common.brushingCooldown.get() * 20;
             return true;
         }
     }

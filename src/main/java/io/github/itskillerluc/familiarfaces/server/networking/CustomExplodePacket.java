@@ -1,7 +1,6 @@
 package io.github.itskillerluc.familiarfaces.server.networking;
 
 import io.github.itskillerluc.familiarfaces.server.util.AdvancedExplosion;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
@@ -12,6 +11,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Explosion;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.List;
@@ -97,10 +98,19 @@ public final class CustomExplodePacket {
     }
 
     public void handle(Supplier<NetworkEvent.Context> contextSupplier) {
-        if (Minecraft.getInstance().level == null || Minecraft.getInstance().player == null) return;
-        AdvancedExplosion explosion = new AdvancedExplosion(Minecraft.getInstance().level, null, x, y, z, power, toBlow, blockInteraction, smallExplosionParticles, largeExplosionParticles, explosionSound);
-        explosion.interact = this.interact;
-        explosion.finalizeExplosion(true);
-        Minecraft.getInstance().player.setDeltaMovement(Minecraft.getInstance().player.getDeltaMovement().add(knockbackX, knockbackY, knockbackZ));
+        contextSupplier.get().enqueueWork(() ->
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientHandler.handle(this))
+        );
+        contextSupplier.get().setPacketHandled(true);
+    }
+
+    private static class ClientHandler {
+        public static void handle(CustomExplodePacket packet) {
+            if (net.minecraft.client.Minecraft.getInstance().level == null || net.minecraft.client.Minecraft.getInstance().player == null) return;
+            AdvancedExplosion explosion = new AdvancedExplosion(net.minecraft.client.Minecraft.getInstance().level, null, packet.x, packet.y, packet.z, packet.power, packet.toBlow, packet.blockInteraction, packet.smallExplosionParticles, packet.largeExplosionParticles, packet.explosionSound);
+            explosion.interact = packet.interact;
+            explosion.finalizeExplosion(true);
+            net.minecraft.client.Minecraft.getInstance().player.setDeltaMovement(net.minecraft.client.Minecraft.getInstance().player.getDeltaMovement().add(packet.knockbackX, packet.knockbackY, packet.knockbackZ));
+        }
     }
 }
