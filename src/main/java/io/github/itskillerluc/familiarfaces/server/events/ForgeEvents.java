@@ -2,8 +2,6 @@ package io.github.itskillerluc.familiarfaces.server.events;
 
 import io.github.itskillerluc.familiarfaces.FamiliarFaces;
 import io.github.itskillerluc.familiarfaces.server.capability.WolfArmorCapabilityProvider;
-import io.github.itskillerluc.familiarfaces.server.config.Config;
-import io.github.itskillerluc.familiarfaces.server.entities.Armadillo;
 import io.github.itskillerluc.familiarfaces.server.entities.ai.WolfCrackiness;
 import io.github.itskillerluc.familiarfaces.server.init.ArmorMaterials;
 import io.github.itskillerluc.familiarfaces.server.init.ItemRegistry;
@@ -26,8 +24,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -80,16 +78,7 @@ public class ForgeEvents {
 
     @SubscribeEvent
     public static void interactionEvent(final PlayerInteractEvent.EntityInteract event) {
-        if (event.getTarget() instanceof Armadillo) {
-            if (event.getItemStack().is(Items.BRUSH)) {
-                if (!event.getEntity().getCooldowns().isOnCooldown(Items.BRUSH)) {
-                    event.getEntity().getCooldowns().addCooldown(Items.BRUSH, Config.Server.brushingCooldown.get());
-                } else {
-                    event.setCancellationResult(InteractionResult.FAIL);
-                    event.setCanceled(true);
-                }
-            }
-        } else if (event.getTarget() instanceof Wolf wolf) {
+        if (event.getTarget() instanceof Wolf wolf) {
             ItemStack itemstack = event.getItemStack();
             Player player = event.getEntity();
             if (itemstack.is(ItemRegistry.WOLF_ARMOR.get()) && wolf.isOwnedBy(player) && WolfArmorUtils.getBodyArmorItem(wolf).isEmpty() && !wolf.isBaby()) {
@@ -98,7 +87,7 @@ public class ForgeEvents {
                 event.setCancellationResult(InteractionResult.SUCCESS);
                 event.setCanceled(true);
                 wolf.playSound(SoundEventRegistry.WOLF_ARMOR_EQUIP.get());
-            } else if (itemstack.is(Items.SHEARS)
+            } else if (itemstack.is(Tags.Items.SHEARS)
                     && wolf.isOwnedBy(player)
                     && WolfArmorUtils.hasArmor(wolf)
                     && (!EnchantmentHelper.hasBindingCurse(WolfArmorUtils.getBodyArmorItem(wolf)) || player.isCreative())) {
@@ -127,6 +116,7 @@ public class ForgeEvents {
             }
         }
     }
+
     @SubscribeEvent
     public static void onPlayerJoin(final PlayerEvent.StartTracking event) {
         if (event.getTarget() instanceof Wolf wolf) {
@@ -166,7 +156,7 @@ public class ForgeEvents {
             ItemStack itemstack = WolfArmorUtils.getBodyArmorItem(wolf);
             float f = WolfArmorUtils.getBodyArmorDropChance(wolf);
             boolean flag = f > 1.0F;
-            if (!itemstack.isEmpty() && !EnchantmentHelper.hasVanishingCurse(itemstack) && (event.isRecentlyHit() | flag) && Math.max(wolf.getRandom().nextFloat() - (float)event.getLootingLevel() * 0.01F, 0.0F) < f) {
+            if (!itemstack.isEmpty() && !EnchantmentHelper.hasVanishingCurse(itemstack) && (event.isRecentlyHit() | flag) && Math.max(wolf.getRandom().nextFloat() - (float) event.getLootingLevel() * 0.01F, 0.0F) < f) {
                 if (!flag && itemstack.isDamageableItem()) {
                     itemstack.setDamageValue(itemstack.getMaxDamage() - wolf.getRandom().nextInt(1 + wolf.getRandom().nextInt(Math.max(itemstack.getMaxDamage() - 3, 1))));
                 }
@@ -177,6 +167,3 @@ public class ForgeEvents {
         }
     }
 }
-
-
-

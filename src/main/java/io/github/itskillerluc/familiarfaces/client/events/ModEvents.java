@@ -25,8 +25,11 @@ import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.item.DyeableLeatherItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -75,6 +78,12 @@ public class ModEvents {
         event.registerSpriteSet(ParticleTypeRegistry.SMALL_GUST.get(), GustParticle.SmallProvider::new);
         event.registerSpecial(ParticleTypeRegistry.GUST_EMITTER_LARGE.get(), new GustSeedParticle.Provider(3.0, 7, 0));
         event.registerSpecial(ParticleTypeRegistry.GUST_EMITTER_SMALL.get(), new GustSeedParticle.Provider(1.0, 3, 2));
+    }
+
+    @SubscribeEvent
+    public static void registerItemColors(final RegisterColorHandlersEvent.Item event) {
+        event.register((ItemStack stack, int tintIndex) ->
+                tintIndex != 1 ? -1 : ((DyeableLeatherItem) stack.getItem()).getColor(stack), ItemRegistry.WOLF_ARMOR.get());
     }
 
     @SubscribeEvent

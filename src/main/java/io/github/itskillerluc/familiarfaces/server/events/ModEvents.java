@@ -15,7 +15,6 @@ import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
@@ -24,7 +23,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -90,12 +88,6 @@ public class ModEvents {
             BrewingRecipeRegistry.addRecipe(Ingredient.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER)), Ingredient.of(Items.COBWEB), PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.MUNDANE));
             BrewingRecipeRegistry.addRecipe(Ingredient.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.AWKWARD)), Ingredient.of(Items.COBWEB), PotionUtils.setPotion(new ItemStack(Items.POTION), PotionRegistry.WEAVING.get()));
         });
-    }
-
-    @SubscribeEvent
-    public static void registerItemColors(final RegisterColorHandlersEvent.Item event) {
-        event.register((ItemStack stack, int tintIndex) ->
-                tintIndex != 1 ? -1 : ((DyeableLeatherItem) stack.getItem()).getColor(stack), ItemRegistry.WOLF_ARMOR.get());
     }
 
     @SubscribeEvent
