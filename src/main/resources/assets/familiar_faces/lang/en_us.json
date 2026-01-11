@@ -66,5 +66,10 @@
   "item.minecraft.tipped_arrow.effect.infested": "Arrow of Infestation",
   "item.minecraft.tipped_arrow.effect.oozing": "Arrow of Oozing",
   "item.minecraft.tipped_arrow.effect.weaving": "Arrow of Weaving",
-  "item.minecraft.tipped_arrow.effect.wind_charged": "Arrow of Wind Charging"
+  "item.minecraft.tipped_arrow.effect.wind_charged": "Arrow of Wind Charging",
+
+  "title.familiar_faces.config": "Familiar Faces Config",
+  "category.familiar_faces.common": "Common Settings",
+  "option.familiar_faces.brushing_cooldown": "Armadillo Brush Cooldown",
+  "tooltip.familiar_faces.brushing_cooldown": "The cooldown for brushing armadillos in seconds."
 }
